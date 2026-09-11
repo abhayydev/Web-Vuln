@@ -91,7 +91,7 @@ python -m webvuln.cli scan http://127.0.0.1:8888/
 ```bash
 python -m pytest tests/ -v
 ```
-note : the website i tested here is intentially vulnerable for public testing big thanks to them too
+note : the website i tested here is intentionally vulnerable for public testing big thanks to them too
 
 <img width="1920" height="953" alt="vuln3" src="https://github.com/user-attachments/assets/2f25f3fe-17b9-4ad6-ae97-859f0c3d4db4" />
 <img width="1920" height="934" alt="vulnn1" src="https://github.com/user-attachments/assets/bae98a76-05ea-46a4-bdf4-3b9d4557ced6" />
