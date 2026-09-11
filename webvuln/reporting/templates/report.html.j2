@@ -1,0 +1,196 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebVuln Security Assessment Report — {{ target.host }}</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --critical: #ef4444;
+            --high: #f97316;
+            --medium: #eab308;
+            --low: #3b82f6;
+            --info: #06b6d4;
+            --border: #334155;
+            --accent: #38bdf8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 1.8rem; color: var(--accent); margin-bottom: 0.5rem; }
+        .header p { color: var(--text-muted); font-size: 0.95rem; }
+        .risk-gauge {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .risk-score { font-size: 2.5rem; font-weight: bold; color: var(--accent); }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+        .stat-card .count { font-size: 2rem; font-weight: bold; }
+        .stat-card.critical .count { color: var(--critical); }
+        .stat-card.high .count { color: var(--high); }
+        .stat-card.medium .count { color: var(--medium); }
+        .stat-card.low .count { color: var(--low); }
+        .stat-card.info .count { color: var(--info); }
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .section h2 { font-size: 1.4rem; color: var(--accent); margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        .finding-card {
+            background: #182234;
+            border-left: 4px solid var(--border);
+            border-radius: 6px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        .finding-card.CRITICAL { border-left-color: var(--critical); }
+        .finding-card.HIGH { border-left-color: var(--high); }
+        .finding-card.MEDIUM { border-left-color: var(--medium); }
+        .finding-card.LOW { border-left-color: var(--low); }
+        .finding-card.INFO { border-left-color: var(--info); }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge.CRITICAL { background: var(--critical); color: white; }
+        .badge.HIGH { background: var(--high); color: white; }
+        .badge.MEDIUM { background: var(--medium); color: black; }
+        .badge.LOW { background: var(--low); color: white; }
+        .badge.INFO { background: var(--info); color: black; }
+        .code-block {
+            background: #090d16;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #38bdf8;
+            overflow-x: auto;
+            margin-top: 0.5rem;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+        th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+        .footer { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 3rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div>
+                <h1>WebVuln Scanner — Assessment Report</h1>
+                <p><strong>Target:</strong> {{ target.normalized_url }}</p>
+                <p><strong>Scan Scope:</strong> {{ target.allowed_scope | join(', ') }}</p>
+                <p><strong>Duration:</strong> {{ summary.duration_seconds }}s | <strong>Requests:</strong> {{ summary.total_requests }}</p>
+            </div>
+            <div class="risk-gauge">
+                <div class="risk-score">{{ summary.overall_risk_score }} / 10.0</div>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Overall Risk Rating</p>
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card critical"><div class="count">{{ summary.critical_count }}</div><div class="label">Critical</div></div>
+            <div class="stat-card high"><div class="count">{{ summary.high_count }}</div><div class="label">High</div></div>
+            <div class="stat-card medium"><div class="count">{{ summary.medium_count }}</div><div class="label">Medium</div></div>
+            <div class="stat-card low"><div class="count">{{ summary.low_count }}</div><div class="label">Low</div></div>
+            <div class="stat-card info"><div class="count">{{ summary.info_count }}</div><div class="label">Info</div></div>
+        </div>
+
+        <section class="section">
+            <h2>Fingerprinted Technologies</h2>
+            {% if technologies %}
+            <table>
+                <thead><tr><th>Technology</th><th>Confidence</th></tr></thead>
+                <tbody>
+                    {% for tech, conf in technologies.items() %}
+                    <tr><td><strong>{{ tech }}</strong></td><td>{{ (conf * 100)|round|int }}%</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="color: var(--text-muted);">No distinct third-party technologies identified.</p>
+            {% endif %}
+        </section>
+
+        <section class="section">
+            <h2>Detailed Security Findings ({{ findings|length }})</h2>
+            {% if findings %}
+                {% for f in findings %}
+                <div class="finding-card {{ f.severity.value }}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h3>{{ f.title }}</h3>
+                        <div>
+                            <span class="badge {{ f.severity.value }}">{{ f.severity.value }}</span>
+                            <span class="badge" style="background: var(--border); color: var(--text-main);">{{ f.confidence.value }}</span>
+                        </div>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                        <strong>Endpoint:</strong> <code>{{ f.url }}</code> {% if f.parameter %}| <strong>Parameter:</strong> <code>{{ f.parameter }}</code>{% endif %}
+                    </p>
+                    <p>{{ f.description }}</p>
+                    
+                    <div style="margin-top: 0.75rem;">
+                        <strong>Evidence:</strong>
+                        <div class="code-block">{{ f.evidence }}</div>
+                    </div>
+
+                    <div style="margin-top: 0.75rem;">
+                        <strong>Remediation:</strong>
+                        <p style="color: #a7f3d0; margin-top: 0.25rem;">{{ f.remediation }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: #4ade80;">No security vulnerabilities identified within the configured scan parameters.</p>
+            {% endif %}
+        </section>
+
+        <footer class="footer">
+            <p>Generated by <strong>WebVuln Scanner</strong> — Authorized Educational VAPT Engine.</p>
+        </footer>
+    </div>
+</body>
+</html>
